@@ -1,68 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Manikanta's Code Editor</title>
-<style>
-  body {
-    font-family: monospace;
-    background: #222;
-    color: #eee;
-    margin: 0;
-    padding: 10px;
-  }
-  select, textarea {
-    width: 100%;
-    font-family: monospace;
-    font-size: 16px;
-    margin-bottom: 10px;
-  }
-  textarea {
-    height: 400px;
-    background: #111;
-    color: #0f0;
-    padding: 10px;
-    border: none;
-    resize: vertical;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Online IDE</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background-color: #f7f9fc;
+      padding: 2rem;
+      color: #333;
+    }
+
+    .ide-container {
+      max-width: 1000px;
+      margin: auto;
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    .ide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    select, button {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 300px;
+      resize: vertical;
+      font-family: monospace;
+      font-size: 1rem;
+      padding: 1rem;
+      margin-top: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .custom-input-area {
+      display: none;
+      margin-top: 1rem;
+    }
+
+    .output-area {
+      background: #f0f0f0;
+      padding: 1rem;
+      margin-top: 1rem;
+      border-radius: 8px;
+      min-height: 100px;
+      white-space: pre-wrap;
+    }
+
+    .toggle-input {
+      margin-top: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .run-btn, .submit-btn {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .submit-btn {
+      background-color: #2196F3;
+    }
+
+    .run-btn:hover, .submit-btn:hover {
+      opacity: 0.9;
+    }
+
+    @media(max-width: 600px) {
+      .ide-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .controls {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h2>Manikanta Venkateswarlu - Offline Code Editor</h2>
-  <label for="lang">Choose language:</label>
-  <select id="lang" onchange="setTemplate()">
-    <option value="cpp">C++</option>
-    <option value="java">Java</option>
-    <option value="python">Python</option>
-  </select>
-  <textarea id="code"></textarea>
+
+  <div class="ide-container">
+    <div class="ide-header">
+      <h2>Online IDE</h2>
+      <select id="language">
+        <option value="cpp">C++</option>
+        <option value="rust">Rust</option>
+        <option value="java">Java</option>
+        <option value="python">Python</option>
+      </select>
+    </div>
+
+    <textarea id="code" placeholder="// Write your code here..."></textarea>
+
+    <div class="toggle-input">
+      <input type="checkbox" id="enable-input" />
+      <label for="enable-input">Enable Custom Input</label>
+    </div>
+
+    <textarea id="custom-input" class="custom-input-area" placeholder="Enter custom input here..."></textarea>
+
+    <div class="controls">
+      <button class="run-btn" onclick="runCode()">Run</button>
+      <button class="submit-btn" onclick="submitCode()">Submit</button>
+    </div>
+
+    <div class="output-area" id="output">Output will appear here...</div>
+  </div>
 
   <script>
-    const templates = {
-      cpp: `#include <iostream>
-using namespace std;
+    const enableInput = document.getElementById("enable-input");
+    const customInput = document.getElementById("custom-input");
 
-int main() {
-    cout << "Hello, Manikanta!" << endl;
-    return 0;
-}`,
-      java: `public class Main {
-    public static void main(String[] args) {
-        System.out.println("Hello, Manikanta!");
-    }
-}`,
-      python: `print("Hello, Manikanta!")`
+    enableInput.addEventListener("change", () => {
+      customInput.style.display = enableInput.checked ? "block" : "none";
+    });
+
+    const languageMap = {
+      cpp: 54,     // C++ (GCC 9.2.0)
+      java: 62,    // Java (OpenJDK 13)
+      python: 71,  // Python (3.8.1)
+      rust: 73     // Rust (1.40.0)
     };
 
-    function setTemplate() {
-      const lang = document.getElementById('lang').value;
-      document.getElementById('code').value = templates[lang];
+    const JUDGE0_API_URL = "https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=true";
+    const API_HEADERS = {
+      "content-type": "application/json",
+      "Content-Type": "application/json",
+      "X-RapidAPI-Key": "cb242f63b4msh39c8633d773a18ap161793jsn14c978bde5e9"  ,  // 🔁 Replace this with your RapidAPI key
+      "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com"
+    };
+
+    async function runCode() {
+      const lang = document.getElementById("language").value;
+      const code = document.getElementById("code").value;
+      const input = enableInput.checked ? document.getElementById("custom-input").value : "";
+
+      if (!code.trim()) {
+        document.getElementById("output").innerText = "⚠️ Please write some code.";
+        return;
+      }
+
+      const encodedCode = btoa(code);
+      const encodedInput = btoa(input);
+
+      document.getElementById("output").innerText = "⏳ Running your code...";
+
+      try {
+        const response = await fetch(JUDGE0_API_URL, {
+          method: "POST",
+          headers: API_HEADERS,
+          body: JSON.stringify({
+            language_id: languageMap[lang],
+            source_code: encodedCode,
+            stdin: encodedInput
+          })
+        });
+
+        const result = await response.json();
+
+        const output =
+          atob(result.stdout || "") ||
+          atob(result.stderr || "") ||
+          atob(result.compile_output || "") ||
+          "⚠️ No output or an error occurred.";
+
+        document.getElementById("output").innerText = output;
+      } catch (err) {
+        document.getElementById("output").innerText = "❌ Error connecting to Judge0 API.";
+        console.error(err);
+      }
     }
 
-    // Initialize with C++ code
-    setTemplate();
+    function submitCode() {
+      runCode().then(() => {
+        document.getElementById("output").innerText += "\n\n📤 Code submitted!";
+      });
+    }
   </script>
+
 </body>
 </html>
-<!--h--!>
