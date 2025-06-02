@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Manikanta's Code Editor</title>
+<style>
+  body {
+    font-family: monospace;
+    background: #222;
+    color: #eee;
+    margin: 0;
+    padding: 10px;
+  }
+  select, textarea {
+    width: 100%;
+    font-family: monospace;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  textarea {
+    height: 400px;
+    background: #111;
+    color: #0f0;
+    padding: 10px;
+    border: none;
+    resize: vertical;
+  }
+</style>
+</head>
+<body>
+  <h2>Manikanta Venkateswarlu - Offline Code Editor</h2>
+  <label for="lang">Choose language:</label>
+  <select id="lang" onchange="setTemplate()">
+    <option value="cpp">C++</option>
+    <option value="java">Java</option>
+    <option value="python">Python</option>
+  </select>
+  <textarea id="code"></textarea>
+
+  <script>
+    const templates = {
+      cpp: `#include <iostream>
+using namespace std;
+
+int main() {
+    cout << "Hello, Manikanta!" << endl;
+    return 0;
+}`,
+      java: `public class Main {
+    public static void main(String[] args) {
+        System.out.println("Hello, Manikanta!");
+    }
+}`,
+      python: `print("Hello, Manikanta!")`
+    };
+
+    function setTemplate() {
+      const lang = document.getElementById('lang').value;
+      document.getElementById('code').value = templates[lang];
+    }
+
+    // Initialize with C++ code
+    setTemplate();
+  </script>
+</body>
+</html>
+<!--h--!>
