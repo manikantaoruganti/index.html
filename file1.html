@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClassSync - Batch 9 Academic Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom CSS for transitions and animations */
+        .file-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.1), 0 2px 4px -1px rgba(255, 255, 255, 0.06);
+        }
+        
+        .modal {
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+        
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999;
+            max-width: 350px;
+            width: 100%;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
+    <!-- Header -->
+    <div class="bg-white/10 backdrop-blur-md border-b border-white/20">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-graduation-cap text-white text-2xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">ClassSync</h1>
+                        <p class="text-white/80 text-sm">Batch 9 Academic Hub</p>
+                    </div>
+                </div>
+                <div class="text-white/80 text-sm">
+                    © 2024 Batch 9 - All Rights Reserved
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-6 py-8">
+        <!-- Tabs -->
+        <div id="tabs-container" class="space-y-6">
+            <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-1 flex">
+                <button data-tab="dashboard" class="tab-button active flex items-center justify-center px-4 py-2 rounded-md text-white bg-white/20">
+                    <i class="fas fa-book-open mr-2 text-sm"></i>
+                    Dashboard
+                </button>
+                <button data-tab="files" class="tab-button flex items-center justify-center px-4 py-2 rounded-md text-white hover:bg-white/10">
+                    <i class="fas fa-file-alt mr-2 text-sm"></i>
+                    Files
+                </button>
+                <button data-tab="discussions" class="tab-button flex items-center justify-center px-4 py-2 rounded-md text-white hover:bg-white/10">
+                    <i class="fas fa-comments mr-2 text-sm"></i>
+                    Discussions
+                </button>
+            </div>
+
+            <!-- Dashboard Tab Content -->
+            <div id="dashboard-tab" class="tab-content">
+                <div class="space-y-6">
+                    <!-- Welcome Section -->
+                    <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-white">
+                        <div class="p-6">
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-users text-white text-xl"></i>
+                                <h2 class="text-xl font-bold">Welcome to ClassSync - Batch 9</h2>
+                            </div>
+                            <p class="text-white/80 mt-2">
+                                Your collaborative academic platform for sharing notes, presentations, and resources
+                            </p>
+                        </div>
+                        <div class="p-6 pt-0">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="bg-white/10 rounded-lg p-4">
+                                    <div class="text-2xl font-bold" id="total-files-count">0</div>
+                                    <div class="text-sm opacity-80">Total Files</div>
+                                </div>
+                                <div class="bg-white/10 rounded-lg p-4">
+                                    <div class="text-2xl font-bold" id="total-discussions-count">0</div>
+                                    <div class="text-sm opacity-80">Discussions</div>
+                                </div>
+                                <div class="bg-white/10 rounded-lg p-4">
+                                    <div class="text-2xl font-bold">4</div>
+                                    <div class="text-sm opacity-80">Departments</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Departments Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="departments-grid">
+                        <!-- Departments will be populated here by JavaScript -->
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="flex flex-wrap gap-4">
+                        <button id="upload-file-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center">
+                            <i class="fas fa-upload mr-2 text-sm"></i>
+                            Upload File
+                        </button>
+                        
+                        <button data-tab="discussions" class="tab-button border border-white/20 text-white hover:bg-white/10 px-4 py-2 rounded-lg flex items-center">
+                            <i class="fas fa-comments mr-2 text-sm"></i>
+                            Start Discussion
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Files Tab Content -->
+            <div id="files-tab" class="tab-content hidden">
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg">
+                    <div class="p-6">
+                        <h2 class="text-white text-xl font-bold">Shared Files</h2>
+                        <p class="text-white/70">
+                            Access all files uploaded by Batch 9 students
+                        </p>
+                        
+                        <!-- Filters -->
+                        <div class="flex flex-wrap gap-4 mt-4">
+                            <select id="department-filter" class="w-[200px] bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white/50">
+                                <option value="">All Departments</option>
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                            
+                            <input id="subject-filter" type="text" placeholder="Filter by subject" 
+                                class="w-[200px] bg-white/10 border border-white/20 text-white placeholder:text-white/50 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white/50">
+                            
+                            <button id="clear-filters-btn" class="border border-white/20 text-white hover:bg-white/10 px-4 py-2 rounded-lg">
+                                Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 pt-0">
+                        <div id="files-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Files will be populated here by JavaScript -->
+                            <div id="no-files-message" class="text-center py-12 text-white/70 col-span-full">
+                                <i class="fas fa-file-alt text-3xl mx-auto mb-4 opacity-50"></i>
+                                <p>No files uploaded yet. Be the first to share your notes!</p>
+                                <button id="upload-first-file-btn" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                                    Upload First File
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Discussions Tab Content -->
+            <div id="discussions-tab" class="tab-content hidden">
+                <div class="space-y-6">
+                    <!-- New Discussion Form -->
+                    <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg">
+                        <div class="p-6">
+                            <h2 class="text-white text-xl font-bold">Start New Discussion</h2>
+                            <p class="text-white/70">
+                                Ask questions, share knowledge, or start conversations with your batch mates
+                            </p>
+                        </div>
+                        <div class="p-6 pt-0">
+                            <form id="new-discussion-form" class="space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="discussion-author" class="block text-white text-sm mb-1">Your Name</label>
+                                        <input id="discussion-author" name="author" placeholder="Enter your name" 
+                                            class="w-full bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white/50" required>
+                                    </div>
+                                    <div>
+                                        <label for="discussion-department" class="block text-white text-sm mb-1">Department</label>
+                                        <select id="discussion-department" name="department" 
+                                            class="w-full bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white/50" required>
+                                            <option value="">Select department</option>
+                                            <!-- Options will be populated by JavaScript -->
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label for="discussion-subject" class="block text-white text-sm mb-1">Subject (Optional)</label>
+                                    <input id="discussion-subject" name="subject" placeholder="Related subject" 
+                                        class="w-full bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white/50">
+                                </div>
+                                
+                                <div>
+                                    <label for="discussion-title" class="block text-white text-sm mb-1">Title</label>
+                                    <input id="discussion-title" name="title" placeholder="Discussion title" 
+                                        class="w-full bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white/50" required>
+                                </div>
+                                
+                                <div>
+                                    <label for="discussion-content" class="block text-white text-sm mb-1">Content</label>
+                                    <textarea id="discussion-content" name="content" placeholder="What would you like to discuss?" 
+                                        class="w-full bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white/50 min-h-[100px]" required></textarea>
+                                </div>
+                                
+                                <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">
+                                    Post Discussion
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Discussions List -->
+                    <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg">
+                        <div class="p-6">
+                            <h2 class="text-white text-xl font-bold">Recent Discussions</h2>
+                            <div class="flex gap-4 mt-4">
+                                <select id="discussion-department-filter" 
+                                    class="w-[200px] bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white/50">
+                                    <option value="">All Departments</option>
+                                    <!-- Options will be populated by JavaScript -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="p-6 pt-0">
+                            <div id="discussions-list" class="space-y-4">
+                                <!-- Discussions will be populated here by JavaScript -->
+                                <div id="no-discussions-message" class="text-center py-12 text-white/70">
+                                    <i class="fas fa-comments text-3xl mx-auto mb-4 opacity-50"></i>
+                                    <p>No discussions yet. Start the conversation!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload File Modal -->
+    <div id="upload-file-modal" class="modal-overlay fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="modal bg-white/10 backdrop-blur-md border border-white/20 rounded-lg max-w-md w-full p-6 text-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Upload New File</h3>
+                <button id="close-upload-modal" class="text-white/70 hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <p class="text-white/70 mb-6">
+                Share your documents with all Batch 9 students
+            </p>
+            
+            <form id="upload-file-form" class="space-y-4">
+                <div>
+                    <label for="file" class="block text-white text-sm mb-1">File</label>
+                    <input type="file" id="file" name="file" accept=".pdf,.ppt,.pptx,.doc,.docx,.jpg,.jpeg,.png,.gif" 
+                        class="w-full bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white/50 file:mr-4 file:py-2 file:px-4
+                        file:rounded-md file:border-0 file:text-sm file:font-semibold
+                        file:bg-blue-600 file:text-white hover:file:bg-blue-700" required>
+                </div>
+                <div>
+                    <label for="uploader-name" class="block text-white text-sm mb-1">Your Name</label>
+                    <input id="uploader-name" name="uploaderName" placeholder="Enter your name" 
+                        class="w-full bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white/50" required>
+                </div>
+                <div>
+                    <label for="upload-department" class="block text-white text-sm mb-1">Department</label>
+                    <select id="upload-department" name="department" 
+                        class="w-full bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white/50" required>
+                        <option value="">Select department</option>
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+                <div>
+                    <label for="upload-subject" class="block text-white text-sm mb-1">Subject</label>
+                    <input id="upload-subject" name="subject" placeholder="Enter subject name" 
+                        class="w-full bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white/50" required>
+                </div>
+                <div>
+                    <label for="file-description" class="block text-white text-sm mb-1">Description (Optional)</label>
+                    <textarea id="file-description" name="description" placeholder="Brief description of the file" 
+                        class="w-full bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white/50 min-h-[80px]"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                    Upload File
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <div class="bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-lg p-4 shadow-lg flex items-start">
+            <div class="flex-1">
+                <h4 id="toast-title" class="font-bold"></h4>
+                <p id="toast-message" class="text-sm text-white/80"></p>
+            </div>
+            <button id="close-toast" class="ml-4 text-white/70 hover:text-white">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // App data and state
+        const departments = {
+            cse: {
+                name: "Computer Science & Engineering",
+                subjects: ["Database Management Systems", "Data Structures", "Operating Systems", "Computer Networks", "Software Engineering", "Algorithms"]
+            },
+            ece: {
+                name: "Electronics & Communication",
+                subjects: ["Digital Signal Processing", "Communication Systems", "VLSI Design", "Microprocessors", "Control Systems", "Antenna Theory"]
+            },
+            mech: {
+                name: "Mechanical Engineering", 
+                subjects: ["Thermodynamics", "Fluid Mechanics", "Machine Design", "Heat Transfer", "Manufacturing Technology", "Mechanics of Materials"]
+            },
+            civil: {
+                name: "Civil Engineering",
+                subjects: ["Structural Engineering", "Geotechnical Engineering", "Transportation Engineering", "Environmental Engineering", "Construction Management", "Surveying"]
+            }
+        };
+        
+        let uploadedFiles = [];
+        let discussions = [];
+        
+        // DOM elements
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const departmentsGrid = document.getElementById('departments-grid');
+        const totalFilesCount = document.getElementById('total-files-count');
+        const totalDiscussionsCount = document.getElementById('total-discussions-count');
+        const uploadFileBtn = document.getElementById('upload-file-btn');
+        const uploadFirstFileBtn = document.getElementById('upload-first-file-btn');
+        const uploadFileModal = document.getElementById('upload-file-modal');
+        const closeUploadModal = document.getElementById('close-upload-modal');
+        const uploadFileForm = document.getElementById('upload-file-form');
+        const departmentSelects = document.querySelectorAll('select[id$="department"]');
+        const departmentFilter = document.getElementById('department-filter');
+        const subjectFilter = document.getElementById('subject-filter');
+        const clearFiltersBtn = document.getElementById('clear-filters-btn');
+        const filesList = document.getElementById('files-list');
+        const noFilesMessage = document.getElementById('no-files-message');
+        const newDiscussionForm = document.getElementById('new-discussion-form');
+        const discussionDepartmentFilter = document.getElementById('discussion-department-filter');
+        const discussionsList = document.getElementById('discussions-list');
+        const noDiscussionsMessage = document.getElementById('no-discussions-message');
+        const toast = document.getElementById('toast');
+        const toastTitle = document.getElementById('toast-title');
+        const toastMessage = document.getElementById('toast-message');
+        const closeToast = document.getElementById('close-toast');
+        
+        // Initialize the app
+        function init() {
+            // Populate department selects
+            Object.keys(departments).forEach(key => {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = departments[key].name;
+                
+                departmentSelects.forEach(select => {
+                    const clone = option.cloneNode(true);
+                    select.appendChild(clone);
+                });
+                
+                // Department filter selects (these can have empty options)
+                const filterOption = option.cloneNode(true);
+                departmentFilter.appendChild(filterOption);
+                discussionDepartmentFilter.appendChild(option.cloneNode(true));
+            });
+            
+            // Populate departments grid
+            Object.keys(departments).forEach(key => {
+                const dept = departments[key];
+                
+                const card = document.createElement('div');
+                card.className = 'bg-white/10 backdrop-blur-md border border-white/20 rounded-lg hover:bg-white/20 transition-all cursor-pointer';
+                card.innerHTML = `
+                    <div class="p-6">
+                        <h3 class="text-white text-lg font-bold">${dept.name}</h3>
+                        <p class="text-white/70">
+                            ${dept.subjects.length} subjects available
+                        </p>
+                    </div>
+                    <div class="p-6 pt-0">
+                        <div class="space-y-2">
+                            ${dept.subjects.slice(0, 3).map(subject => `
+                                <div class="text-sm text-white/80">• ${subject}</div>
+                            `).join('')}
+                            ${dept.subjects.length > 3 ? `
+                                <div class="text-sm text-white/60">+ ${dept.subjects.length - 3} more...</div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                departmentsGrid.appendChild(card);
+            });
+            
+            // Event listeners
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tab = button.getAttribute('data-tab');
+                    switchTab(tab);
+                });
+            });
+            
+            uploadFileBtn.addEventListener('click', () => {
+                uploadFileModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+            
+            uploadFirstFileBtn.addEventListener('click', () => {
+                uploadFileModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+            
+            closeUploadModal.addEventListener('click', () => {
+                uploadFileModal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            });
+            
+            uploadFileModal.addEventListener('click', (e) => {
+                if (e.target === uploadFileModal) {
+                    uploadFileModal.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+            
+            uploadFileForm.addEventListener('submit', handleFileUpload);
+            clearFiltersBtn.addEventListener('click', clearFilters);
+            departmentFilter.addEventListener('change', filterFiles);
+            subjectFilter.addEventListener('input', filterFiles);
+            newDiscussionForm.addEventListener('submit', handleDiscussionPost);
+            discussionDepartmentFilter.addEventListener('change', filterDiscussions);
+            closeToast.addEventListener('click', hideToast);
+            
+            // Load sample data
+            loadSampleData();
+        }
+        
+        // Tab switching
+        function switchTab(tab) {
+            // Update active tab button
+            tabButtons.forEach(button => {
+                button.classList.remove('active', 'bg-white/20');
+                if (button.getAttribute('data-tab') === tab) {
+                    button.classList.add('active', 'bg-white/20');
+                }
+            });
+            
+            // Show the corresponding tab content
+            tabContents.forEach(content => {
+                content.classList.add('hidden');
+                if (content.id === `${tab}-tab`) {
+                    content.classList.remove('hidden');
+                }
+            });
+        }
+        
+        // File upload handler
+        function handleFileUpload(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const fileInput = form.querySelector('#file');
+            const uploaderName = form.querySelector('#uploader-name').value;
+            const department = form.querySelector('#upload-department').value;
+            const subject = form.querySelector('#upload-subject').value;
+            const description = form.querySelector('#file-description').value;
+            
+            if (!fileInput.files.length || !uploaderName || !department || !subject) {
+                showToast('Error', 'Please fill in all required fields', 'error');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const fileType = file.type;
+            const fileSize = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+            const uploadDate = new Date().toLocaleDateString();
+            
+            const newFile = {
+                id: Date.now().toString(),
+                name: file.name,
+                type: fileType,
+                size: fileSize,
+                uploadedBy: uploaderName,
+                uploadDate,
+                department,
+                subject,
+                description
+            };
+            
+            uploadedFiles.unshift(newFile);
+            updateFilesDisplay();
+            updateCounts();
+            
+            form.reset();
+            uploadFileModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            
+            showToast('Success!', 'File uploaded successfully and is now available to all batch 9 students');
+        }
+        
+        // Discussion post handler
+        function handleDiscussionPost(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const author = form.querySelector('#discussion-author').value;
+            const department = form.querySelector('#discussion-department').value;
+            const subject = form.querySelector('#discussion-subject').value || 'General';
+            const title = form.querySelector('#discussion-title').value;
+            const content = form.querySelector('#discussion-content').value;
+            
+            if (!author || !department || !title || !content) {
+                showToast('Error', 'Please fill in all required fields', 'error');
+                return;
+            }
+            
+            const newDiscussion = {
+                id: Date.now().toString(),
+                title,
+                content,
+                author,
+                department,
+                subject,
+                date: new Date().toLocaleDateString(),
+                replies: 0
+            };
+            
+            discussions.unshift(newDiscussion);
+            updateDiscussionsDisplay();
+            updateCounts();
+            
+            form.reset();
+            showToast('Posted!', 'Your discussion has been posted successfully');
+        }
+        
+        // Update files display
+        function updateFilesDisplay() {
+            if (uploadedFiles.length === 0) {
+                noFilesMessage.classList.remove('hidden');
+                filesList.innerHTML = '';
+                filesList.appendChild(noFilesMessage);
+                return;
+            }
+            
+            noFilesMessage.classList.add('hidden');
+            
+            // Clear existing files except the no files message
+            filesList.innerHTML = '';
+            
+            uploadedFiles.forEach(file => {
+                const fileIcon = file.type.includes('image') ? 
+                    '<i class="fas fa-image text-white/80"></i>' : 
+                    '<i class="fas fa-file-alt text-white/80"></i>';
+                
+                const fileCard = document.createElement('div');
+                fileCard.className = 'file-card bg-white/5 border border-white/20 rounded-lg hover:bg-white/10 transition-all duration-200';
+                fileCard.innerHTML = `
+                    <div class="p-4">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                ${fileIcon}
+                                <span class="text-white font-medium text-sm truncate" title="${file.name}">${file.name}</span>
+                            </div>
+                            <button class="text-white hover:bg-white/10 p-2 rounded-full">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-2 text-sm text-white/70">
+                            <div>Uploaded by: <span class="text-white">${file.uploadedBy}</span></div>
+                            <div>Size: ${file.size}</div>
+                            <div>Date: ${file.uploadDate}</div>
+                            <div class="flex items-center space-x-2">
+                                <span class="bg-white/20 text-white text-xs px-2 py-1 rounded">
+                                    ${departments[file.department]?.name || file.department}
+                                </span>
+                            </div>
+                            <div class="text-white">${file.subject}</div>
+                            ${file.description ? `
+                                <div class="text-white/60 text-xs">${file.description}</div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                filesList.appendChild(fileCard);
+            });
+        }
+        
+        // Update discussions display
+        function updateDiscussionsDisplay() {
+            if (discussions.length === 0) {
+                noDiscussionsMessage.classList.remove('hidden');
+                discussionsList.innerHTML = '';
+                discussionsList.appendChild(noDiscussionsMessage);
+                return;
+            }
+            
+            noDiscussionsMessage.classList.add('hidden');
+            discussionsList.innerHTML = '';
+            
+            discussions.forEach(discussion => {
+                const discussionCard = document.createElement('div');
+                discussionCard.className = 'bg-white/5 border border-white/20 rounded-lg hover:bg-white/10 transition-all cursor-pointer';
+                discussionCard.innerHTML = `
+                    <div class="p-4">
+                        <div class="flex items-start justify-between mb-2">
+                            <h3 class="text-white font-medium">${discussion.title}</h3>
+                            <div class="flex items-center space-x-2 text-sm text-white/60">
+                                <i class="fas fa-calendar"></i>
+                                <span>${discussion.date}</span>
+                            </div>
+                        </div>
+                        
+                        <p class="text-white/80 mb-3">${discussion.content}</p>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2 text-sm text-white/70">
+                                <span>By ${discussion.author}</span>
+                                <span>•</span>
+                                <span class="bg-white/20 text-white text-xs px-2 py-1 rounded">
+                                    ${departments[discussion.department]?.name || discussion.department}
+                                </span>
+                                ${discussion.subject !== 'General' ? `
+                                    <span>•</span>
+                                    <span>${discussion.subject}</span>
+                                ` : ''}
+                            </div>
+                            <div class="text-sm text-white/60">
+                                ${discussion.replies} replies
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                discussionsList.appendChild(discussionCard);
+            });
+        }
+        
+        // Filter files
+        function filterFiles() {
+            const departmentFilterValue = departmentFilter.value;
+            const subjectFilterValue = subjectFilter.value.toLowerCase();
+            
+            const filtered = uploadedFiles.filter(file => {
+                if (departmentFilterValue && file.department !== departmentFilterValue) return false;
+                if (subjectFilterValue && !file.subject.toLowerCase().includes(subjectFilterValue)) return false;
+                return true;
+            });
+            
+            // Temporary save current files
+            const currentFiles = [...uploadedFiles];
+            
+            // Display filtered files
+            uploadedFiles = filtered;
+            updateFilesDisplay();
+            
+            // Restore original files
+            uploadedFiles = currentFiles;
+        }
+        
+        // Filter discussions
+        function filterDiscussions() {
+            const departmentFilterValue = discussionDepartmentFilter.value;
+            
+            const filtered = discussions.filter(discussion => {
+                if (departmentFilterValue && discussion.department !== departmentFilterValue) return false;
+                return true;
+            });
+            
+            // Temporary save current discussions
+            const currentDiscussions = [...discussions];
+            
+            // Display filtered discussions
+            discussions = filtered;
+            updateDiscussionsDisplay();
+            
+            // Restore original discussions
+            discussions = currentDiscussions;
+        }
+        
+        // Clear all filters
+        function clearFilters() {
+            departmentFilter.value = '';
+            subjectFilter.value = '';
+            filterFiles();
+        }
+        
+        // Update counts
+        function updateCounts() {
+            totalFilesCount.textContent = uploadedFiles.length;
+            totalDiscussionsCount.textContent = discussions.length;
+        }
+        
+        // Toast notification
+        function showToast(title, message, type = 'success') {
+            toastTitle.textContent = title;
+            toastMessage.textContent = message;
+            
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+            
+            // Auto hide after 5 seconds
+            setTimeout(hideToast, 5000);
+        }
+        
+        function hideToast() {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 300);
+        }
+        
+        // Load sample data
+        function loadSampleData() {
+            // Sample files
+            const sampleFiles = [
+                {
+                    id: '1',
+                    name: 'Database Management Systems Notes.pdf',
+                    type: 'application/pdf',
+                    size: '2.34 MB',
+                    uploadedBy: 'John Doe',
+                    uploadDate: new Date().toLocaleDateString(),
+                    department: 'cse',
+                    subject: 'Database Management Systems',
+                    description: 'Complete notes for midterm exam'
+                },
+                {
+                    id: '2',
+                    name: 'Data Structures Assignment.docx',
+                    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    size: '0.87 MB',
+                    uploadedBy: 'Jane Smith',
+                    uploadDate: new Date().toLocaleDateString(),
+                    department: 'cse',
+                    subject: 'Data Structures',
+                    description: 'Assignment solutions for week 3'
+                },
+                {
+                    id: '3',
+                    name: 'Thermodynamics Lecture.pptx',
+                    type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                    size: '5.12 MB',
+                    uploadedBy: 'Robert Johnson',
+                    uploadDate: new Date().toLocaleDateString(),
+                    department: 'mech',
+                    subject: 'Thermodynamics',
+                    description: 'Lecture slides for Chapter 4 & 5'
+                }
+            ];
+            
+            // Sample discussions
+            const sampleDiscussions = [
+                {
+                    id: '1',
+                    title: 'Help with DBMS assignment',
+                    content: 'I\'m stuck on question 3 of the DBMS assignment. Can anyone explain how to approach the normalization problem?',
+                    author: 'Alice',
+                    department: 'cse',
+                    subject: 'Database Management Systems',
+                    date: new Date().toLocaleDateString(),
+                    replies: 3
+                },
+                {
+                    id: '2',
+                    title: 'Best resources for learning DSP',
+                    content: 'Does anyone have recommendations for good online resources to learn Digital Signal Processing concepts?',
+                    author: 'Bob',
+                    department: 'ece',
+                    subject: 'Digital Signal Processing',
+                    date: new Date().toLocaleDateString(),
+                    replies: 5
+                },
+                {
+                    id: '3',
+                    title: 'Study group for Structures exam',
+                    content: 'I\'m organizing a study group for the upcoming Structures exam. Let me know if you\'re interested in joining!',
+                    author: 'Charlie',
+                    department: 'civil',
+                    subject: 'Structural Engineering',
+                    date: new Date().toLocaleDateString(),
+                    replies: 8
+                }
+            ];
+            
+            uploadedFiles = sampleFiles;
+            discussions = sampleDiscussions;
+            
+            updateFilesDisplay();
+            updateDiscussionsDisplay();
+            updateCounts();
+        }
+        
+        // Initialize the app when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
